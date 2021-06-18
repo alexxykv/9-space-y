@@ -16,8 +16,9 @@ const credentials = { key: privateKey, cert: certificate };
 const httpsServer = https.createServer(credentials, app);
 
 app.use(express.static(path.join(rootDir, "/spa/build/")));
-// app.use(bodyParser.json());
+app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(express.json());
 app.use(redirect);
 
 function redirect(req, res, next) {
@@ -97,6 +98,25 @@ app.get("/api/roadster", async (_, res) => {
   const response = await fetch("https://api.spacexdata.com/v3/roadster");
   const json = await response.json();
   res.json(json);
+});
+
+const items = {};
+
+app.get("/api/get_sent_to_mars", (_, res) => {
+  res.json(Object.values(items));
+});
+
+app.post("/api/send_to_mars", (req, res) => {
+  const item = req.body;
+  item.id = Math.random();
+  items[item.id] = item;
+  res.json(Object.values(items));
+});
+
+app.delete("/api/cancel_sending_to_mars", (req, res) => {
+  const item = req.body;
+  delete items[item.id];
+  res.json(Object.values(items));
 });
 
 app.get("/*", (_, res) => {
